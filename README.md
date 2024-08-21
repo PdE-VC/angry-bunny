@@ -23,10 +23,7 @@ angry-bunny-art-coin/
 ├── contracts/
 │   ├── ABAC.sol              # ERC20 Smart Contract for Angry Bunny Art Coin
 │   ├── NFTCollection.sol     # Base Smart Contract for NFT Collection Management
-│   ├── collections/          # Dynamic folder containing contracts for each NFT collection
-│   │   ├── Seed1Collection.sol    # Example Smart Contract for NFT Collection of Seed 1
-│   │   ├── Seed2Collection.sol    # Example Smart Contract for NFT Collection of Seed 2
-│   │   └── README.md             # Documentation for dynamic NFT collections
+│   ├── INFTCollection.sol    # Interface for interaction with NFT Smart Contract
 │   ├── PBT.sol               # Smart Contract for Physical Backed Tokens
 │   └── README.md             # Documentation for Smart Contracts
 │
