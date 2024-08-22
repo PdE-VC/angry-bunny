@@ -43,7 +43,7 @@ angry-bunny-art-coin/
 │
 ├── tests/
 │   ├── contract_tests/
-│   │   ├── test_ABAC.sol     # Unit tests for the ABAC smart contract
+│   │   ├── test_ABAC.js      # Unit tests for the ABAC smart contract
 │   │   ├── test_NFT.sol      # Unit tests for the NFT Collection contract
 │   │   └── README.md         # Documentation for contract tests
 │   ├── server_tests/
