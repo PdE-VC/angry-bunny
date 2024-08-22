@@ -48,7 +48,7 @@ contract ABAC is ERC20, Ownable {
 
     // Minimum interval between NFT minting (10 minutes)
     uint256 public constant MINT_INTERVAL = 10 minutes;
-    uint256 public lastMintTime;
+    uint256 public lastMintTime = 1;
 
     // Counter for the number of NFT collections created
     uint256 public collectionCounter;
@@ -77,6 +77,7 @@ contract ABAC is ERC20, Ownable {
         require(miner != address(0), "Invalid miner address");
         require(seedToCollection[seedNumber] != address(0), "Invalid seed number");
         require(activeMiners.contains(miner), "Miner is not active");
+        require(lastMintTime > nextNFTInfo.lastUpdated, "Cannot update: lastMintTime must be greater than lastUpdated");
 
         nextNFTInfo = NextNFTInfo({
             miner: miner,
