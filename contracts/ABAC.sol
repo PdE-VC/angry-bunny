@@ -79,6 +79,10 @@ contract ABAC is ERC20, Ownable {
         require(activeMiners.contains(miner), "Miner is not active");
         require(lastMintTime > nextNFTInfo.lastUpdated, "Cannot update: lastMintTime must be greater than lastUpdated");
 
+        address collectionAddress = seedToCollection[nextNFTInfo.seedNumber];
+        INFTCollection nftCollection = INFTCollection(collectionAddress);
+        require(nftCollection.tokenCounter() < maxNFTs, "Max NFT limit reached");
+
         nextNFTInfo = NextNFTInfo({
             miner: miner,
             seedNumber: seedNumber,
@@ -89,16 +93,12 @@ contract ABAC is ERC20, Ownable {
 
     // Function to mint an NFT and reward tokens, executable every 10 minutes
     function mintAndReward() external {
+        
         require(block.timestamp >= lastMintTime + MINT_INTERVAL, "Minting too soon");
-        require(nextNFTInfo.lastUpdated + MINT_INTERVAL > block.timestamp, "Next NFT info outdated");
-
-        address collectionAddress = seedToCollection[nextNFTInfo.seedNumber];
-        INFTCollection nftCollection = INFTCollection(collectionAddress);
-        require(nftCollection.tokenCounter() < maxNFTs, "Max NFT limit reached");
+        require(nextNFTInfo.lastUpdated  > lastMintTime, "Next NFT info outdated");
+        require(totalSupply() + tokensPerBlock <= maxSupply, "Max supply reached");
 
         _applyHalving();
-
-        require(totalSupply() + tokensPerBlock <= maxSupply, "Max supply reached");
 
         // Mint the NFT for the contract itself
         nftCollection.createNFT(address(this), nextNFTInfo.imageURI);
