@@ -4,30 +4,30 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MinerNFT is ERC721Enumerable, Ownable {
-    uint256 public constant MAX_MINERS_BLOCK = 1001;
-    uint256 public constant MINERS_PER_BLOCK = 1000;
+contract PatreonManager is ERC721Enumerable, Ownable {
+    uint256 public constant MAX_PATREONS_BLOCK = 1001;
+    uint256 public constant PATREONS_PER_BLOCK = 1000;
     uint256 public nextTokenId;
-    uint256 public minersCount;
+    uint256 public patreonsCount;
 
-    constructor(address foundationAddress) ERC721("MinerNFT", "MNFT") {
-        addMiner(foundationAddress);
+    constructor(address foundationAddress) ERC721("PatreonManager", "PNFT") {
+        addPatreon(foundationAddress);
     }
 
-    function addMiner(address miner) external onlyOwner {
-        require(minersCount < MAX_MINERS_BLOCK, "Max number of miners reached");
+    function addPatreon(address patreon) public onlyOwner {
+        require(patreonsCount < MAX_PATREONS_BLOCK, "Max number of patreons reached");
 
-        for (uint256 i = 0; i < MINERS_PER_BLOCK; i++) {
-            _mint(miner, nextTokenId);
+        for (uint256 i = 0; i < PATREONS_PER_BLOCK; i++) {
+            _mint(patreon, nextTokenId);
             nextTokenId++;
         }
 
-        minersCount++;
+        patreonsCount++;
     }
 
-    function selectRandomMiner() external view returns (address) {
+    function selectRandomPatreon() external view returns (address) {
         require(totalSupply() > 0, "No NFTs minted yet");
-        
+
         uint256 randomTokenId = _random() % totalSupply();
         return ownerOf(randomTokenId);
     }
@@ -42,4 +42,3 @@ contract MinerNFT is ERC721Enumerable, Ownable {
         )));
     }
 }
-
