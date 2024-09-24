@@ -52,8 +52,9 @@ contract VariationPoolManager is Ownable {
     
     // Función para que el curador seleccione una variación
     function selectVariation(uint256 seedId, uint256 variationIndex) external onlyOwner {
-        Variation[] memory variations = variationsBySeed[seedId];
         require(seedCollectionManager.seedCounter() >= seedId, "Seed does not exist");
+        
+        Variation[] memory variations = variationsBySeed[seedId];
         require(variations.length >= difficulty, "Variation limit not reached yet");
         require(variationIndex < variations.length, "Invalid variation index");
 

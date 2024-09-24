@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.6",
+    "uws": "^200.0.0"
+  }
+}

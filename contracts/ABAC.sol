@@ -53,7 +53,7 @@ contract ABAC is ERC20, Ownable {
 
         _applyHalving();
 
-        address selectedPatreon = patreonManager.selectRandomPatreon();
+        address selectedPatreon = patreonManager.selectRandomHolder();
 
         address seedCreator = seedCollectionManager.getSeedCreator(seed);
 

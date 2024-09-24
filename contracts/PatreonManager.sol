@@ -88,7 +88,7 @@ contract PatreonManager is ERC20, Ownable {
     }
 
     // Function to choose a random holder based on their token weight
-    function getRandomHolder() external view returns (address) {
+    function selectRandomHolder() external view returns (address) {
         if (holders.length < 0) {
             return owner();
         }
