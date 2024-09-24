@@ -3,4 +3,5 @@ pragma solidity ^0.8.0;
 
 interface IPatreonManager {
     function selectRandomPatreon() external view returns (address);
+    function mintNewSupply() external;
 }

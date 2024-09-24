@@ -6,6 +6,8 @@ interface ISeedCollectionManager {
 
     function getSeedCreator(uint256 seedId) external view returns (address);
 
+    function seedCounter() external view returns (uint256);
+
     function createSeed(string memory name, string memory symbol, uint256 zone, uint256 maxVariations,
                     uint256 universe, string memory uri, address seedCreator) external returns (uint256);
 }

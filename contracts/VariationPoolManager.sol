@@ -15,6 +15,7 @@ contract VariationPoolManager is Ownable {
     uint256 public constant maxSeedVariations = 100;
 
     IABACToken public abacToken;
+    ISeedCollectionManager public seedCollectionManager;
 
     mapping(uint256 => Variation[]) public variationsBySeed;
     mapping(uint256 => uint256) public variationCountBySeed;
@@ -25,8 +26,9 @@ contract VariationPoolManager is Ownable {
     event SeedReadyToCurate(uint256 seedId);
     event VariationSelected(uint256 seedId, string contentUri, address generator);
 
-    constructor(address _abacToken) {
+    constructor(address _abacToken, address seedCollectionManagerAddress) {
         abacToken = IABACToken(_abacToken);
+        seedCollectionManager = ISeedCollectionManager(seedCollectionManagerAddress);
     }
 
     function setDifficulty(uint256 _difficulty) external onlyOwner {
@@ -35,6 +37,7 @@ contract VariationPoolManager is Ownable {
 
     // Función para que los mineros propongan variaciones
     function proposeVariation(uint256 seedId, string memory contentUri, address generator) external {
+        require(seedCollectionManager.seedCounter() >= seedId, "Seed does not exist");
         require(generator != address(0), "Generator address is required");
         require(variationCountBySeed[seedId] < maxSeedVariations, "Seed collection is full");
         require(variationsBySeed[seedId].length < difficulty, "Variation limit reached for this seed");
@@ -46,10 +49,11 @@ contract VariationPoolManager is Ownable {
             emit SeedReadyToCurate(seedId);
         }
     }
-
+    
     // Función para que el curador seleccione una variación
     function selectVariation(uint256 seedId, uint256 variationIndex) external onlyOwner {
         Variation[] memory variations = variationsBySeed[seedId];
+        require(seedCollectionManager.seedCounter() >= seedId, "Seed does not exist");
         require(variations.length >= difficulty, "Variation limit not reached yet");
         require(variationIndex < variations.length, "Invalid variation index");
 
@@ -64,5 +68,11 @@ contract VariationPoolManager is Ownable {
         delete variationsBySeed[seedId];
         
         variationCountBySeed[seedId]++;
+    }
+
+    function rejectAllVariations(uint256 seedId) external onlyOwner {
+        Variation[] memory variations = variationsBySeed[seedId];
+        require(variations.length >= difficulty, "Variation limit not reached yet");
+        delete variationsBySeed[seedId];
     }
 }

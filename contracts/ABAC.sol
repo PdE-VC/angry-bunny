@@ -7,14 +7,14 @@ import "./interfaces/IPatreonManager.sol";
 import "./interfaces/ISeedCollectionManager.sol";
 
 contract ABAC is ERC20, Ownable {
-    
-    uint256 public tokensPerBlock;
-    uint256 public constant MIN_TOKENS_PER_BLOCK = 1 * 10**18;
-    uint256 public constant maxSupply = 21 * 10**9 * 10**18;
-    uint256 public constant INITIAL_TOKENS_PER_BLOCK = 50 * 10**18;
+    uint256 public constant MIN_TOKENS_PER_BLOCK = 10;
+    uint256 public constant MAX_SUPPLY = 21 * 10**3 * 10**6 * 10**18;
+    uint256 public constant INITIAL_TOKENS_PER_BLOCK = 50 * 10**3 * 10**18;
+    uint256 public constant HALVING_BLOCK_INTERVAL = 4 * 365 * 24 * 60 * 6;
+    uint256 public constant INITIAL_SUPPLY = MAX_SUPPLY * 4 / 100;
 
     uint256 public block_number;
-    uint256 public constant HALVING_BLOCK_INTERVAL = 4 * 365 * 24 * 60 * 6;
+    uint256 public tokensPerBlock;
 
     bool public seedCollectionManagerAlreadySet = false;
 
@@ -23,19 +23,23 @@ contract ABAC is ERC20, Ownable {
 
     address public variationPoolAddress;
 
-    constructor(uint256 initialSupply, address _variationPoolAddress, 
-            address patreonManagerAddress) ERC20("Angry Bunny Art Coin", "ABAC") {
-        _mint(msg.sender, initialSupply);
+    constructor(address patreonManagerAddress) ERC20("Angry Bunny Art Coin", "ABAC") {
+        _mint(msg.sender, 50 * 10 ** 18);
         tokensPerBlock = INITIAL_TOKENS_PER_BLOCK;
-        variationPoolAddress = _variationPoolAddress;
         patreonManager = IPatreonManager(patreonManagerAddress);
     }
 
     function setCollectionManagerAddress(address seedCollectionManagerAddress) external onlyOwner {
-        require(seedCollectionManagerAlreadySet, "Address already set");
+        require(!seedCollectionManagerAlreadySet, "Address already set");
         require(seedCollectionManagerAddress != address(0), "Invalid address");
         seedCollectionManager = ISeedCollectionManager(seedCollectionManagerAddress);
         seedCollectionManagerAlreadySet = true;
+    }
+
+    function setVariationPoolAddress(address _variationPoolAddress) external onlyOwner {
+        require(variationPoolAddress == address(0), "Address already set");
+        require(_variationPoolAddress != address(0), "Invalid address");
+        variationPoolAddress = _variationPoolAddress;
     }
 
     modifier onlyVariationPool() {
@@ -45,7 +49,7 @@ contract ABAC is ERC20, Ownable {
     }
 
     function mintTokenAndVariation(uint256 seed, address generator, string memory contentUri) external onlyVariationPool {
-        require(totalSupply() + tokensPerBlock <= maxSupply, "Max supply reached");
+        require(totalSupply() + tokensPerBlock <= MAX_SUPPLY, "Max supply reached");
 
         _applyHalving();
 
@@ -77,6 +81,8 @@ contract ABAC is ERC20, Ownable {
             } else {
                 tokensPerBlock = newTokensPerBlock;
             }
+
+            patreonManager.mintNewSupply();
         }
     }
 }

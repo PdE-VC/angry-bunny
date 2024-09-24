@@ -8,7 +8,7 @@ contract SeedCollectionManager is Ownable {
     mapping(uint256 => address) public seeds;
     
     uint256 public seedCounter;
-    // WATCH OUT!! ALSO IN ValidationPoolManager.sol
+    // WATCH OUT!! ALSO IN VariationPoolManager.sol
     uint256 public constant maxSeedVariations = 100;
 
     address public abacContract;
@@ -33,15 +33,13 @@ contract SeedCollectionManager is Ownable {
         return SeedCollection(seeds[seedId]).seedCreator();
     }
 
-    function createSeed(string memory name, string memory symbol, uint256 zone, uint256 maxVariations,
+    function createSeed(string memory name, string memory symbol, uint256 zone,
                     uint256 universe, string memory uri, address seedCreator
-                    ) public onlyOwner returns (uint256) {
-        uint256 seedId = seedCounter;
-        SeedCollection newCollection = new SeedCollection(name, symbol, zone, maxVariations, 
-                                                universe, uri, seedCreator);
-        seeds[seedId] = address(newCollection);
+                    ) public onlyOwner {
         seedCounter++;
-        return seedId;
+        SeedCollection newCollection = new SeedCollection(name, symbol, zone, maxSeedVariations, 
+                                                universe, uri, seedCreator);
+        seeds[seedCounter] = address(newCollection);
     }
 
     function getSeedAddress(uint256 seedId) external view returns (address) {
