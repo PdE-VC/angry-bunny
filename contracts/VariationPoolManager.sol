@@ -53,6 +53,10 @@ contract VariationPoolManager is Ownable {
     function getVariationsLength(uint256 seedId) public view returns (uint256) {
         return variationsBySeed[seedId].length;
     }
+
+    function getVariationsBySeed(uint256 seedId) external view returns (Variation[] memory) {
+        return variationsBySeed[seedId];
+    }
     
     // Función para que el curador seleccione una variación
     function selectVariation(uint256 seedId, uint256 variationIndex) external onlyOwner {
