@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.6",
+    "dotenv": "^16.4.5",
     "uws": "^200.0.0"
   }
 }

@@ -17,16 +17,23 @@ contract ABAC is ERC20, Ownable {
     uint256 public tokensPerBlock;
 
     bool public seedCollectionManagerAlreadySet = false;
+    bool public patreonManagerAddressAlreadySet = false;
 
     ISeedCollectionManager public seedCollectionManager;
     IPatreonManager public patreonManager;
 
     address public variationPoolAddress;
 
-    constructor(address patreonManagerAddress) ERC20("Angry Bunny Art Coin", "ABAC") {
+    constructor() ERC20("Angry Bunny Art Coin", "ABAC") {
         _mint(msg.sender, 50 * 10 ** 18);
         tokensPerBlock = INITIAL_TOKENS_PER_BLOCK;
-        patreonManager = IPatreonManager(patreonManagerAddress);
+    }
+
+    function setPatreonManagerAddress(address _patreonManagerAddress) external onlyOwner {
+        require(!patreonManagerAddressAlreadySet, "Address already set");
+        require(_patreonManagerAddress != address(0), "Invalid address");
+        patreonManager = IPatreonManager(_patreonManagerAddress);
+        patreonManagerAddressAlreadySet = true;
     }
 
     function setCollectionManagerAddress(address seedCollectionManagerAddress) external onlyOwner {
@@ -72,7 +79,8 @@ contract ABAC is ERC20, Ownable {
     }
 
     function _applyHalving() internal {
-        if (block_number % HALVING_BLOCK_INTERVAL == 0) {
+        require(HALVING_BLOCK_INTERVAL > 0, "Invalid halving block interval");
+        if ((block_number % HALVING_BLOCK_INTERVAL) == 0) {
             uint256 halvings = block_number / HALVING_BLOCK_INTERVAL;
             uint256 newTokensPerBlock = INITIAL_TOKENS_PER_BLOCK * 10**18 >> halvings;
 

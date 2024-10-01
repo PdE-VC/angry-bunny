@@ -14,7 +14,7 @@ contract PatreonManager is ERC20, Ownable {
     address[] public holders; // List of holders
     address abacContract; // Address of the ABAC contract
 
-    constructor(address _abacContract) ERC20("Angry Bunny Patreon Manager", "ABPM") {
+    constructor(string memory name, string memory symbol, address _abacContract) ERC20(name, symbol) {
         _mint(msg.sender, initialSupply); // Mint initial supply to owner
         totalPeriods = 0; // No periods elapsed yet
         abacContract = _abacContract;
@@ -89,11 +89,12 @@ contract PatreonManager is ERC20, Ownable {
 
     // Function to choose a random holder based on their token weight
     function selectRandomHolder() external view returns (address) {
-        if (holders.length < 0) {
+        uint256 totalHoldedTokens = totalSupply() - balanceOf(owner());
+
+        if (totalHoldedTokens == 0 || holders.length == 0) {
             return owner();
         }
 
-        uint256 totalHoldedTokens = totalSupply() - balanceOf(owner());
         uint256 random = uint256(keccak256(abi.encodePacked(
             block.prevrandao,
             block.gaslimit,

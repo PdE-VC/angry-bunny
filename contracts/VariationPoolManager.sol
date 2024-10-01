@@ -18,7 +18,7 @@ contract VariationPoolManager is Ownable {
     ISeedCollectionManager public seedCollectionManager;
 
     mapping(uint256 => Variation[]) public variationsBySeed;
-    mapping(uint256 => uint256) public variationCountBySeed;
+    mapping(uint256 => uint256) public validatedVariationCountBySeed;
 
     uint256 public difficulty = 10;
 
@@ -37,9 +37,9 @@ contract VariationPoolManager is Ownable {
 
     // Función para que los mineros propongan variaciones
     function proposeVariation(uint256 seedId, string memory contentUri, address generator) external {
-        require(seedCollectionManager.seedCounter() >= seedId, "Seed does not exist");
+        require(seedCollectionManager.seedCounter() >= seedId && seedId > 0, "Seed does not exist");
         require(generator != address(0), "Generator address is required");
-        require(variationCountBySeed[seedId] < maxSeedVariations, "Seed collection is full");
+        require(validatedVariationCountBySeed[seedId] < maxSeedVariations, "Seed collection is full");
         require(variationsBySeed[seedId].length < difficulty, "Variation limit reached for this seed");
 
         variationsBySeed[seedId].push(Variation(contentUri, generator));
@@ -68,7 +68,7 @@ contract VariationPoolManager is Ownable {
         // Limpiar las variaciones de la semilla
         delete variationsBySeed[seedId];
         
-        variationCountBySeed[seedId]++;
+        validatedVariationCountBySeed[seedId]++;
     }
 
     function rejectAllVariations(uint256 seedId) external onlyOwner {

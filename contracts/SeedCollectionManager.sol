@@ -26,7 +26,7 @@ contract SeedCollectionManager is Ownable {
     function mintVariation(uint256 seedId, string memory imageURI) external onlyABAC {
         SeedCollection seedCollection = SeedCollection(seeds[seedId]);
         require(seedCollection.tokenVariations() < maxSeedVariations, "Max variations reached");
-        seedCollection.createNFTVariation(abacContract, imageURI);
+        seedCollection.createNFTVariation(owner(), imageURI);
     }
 
     function getSeedCreator(uint256 seedId) external view returns (address) {
