@@ -11,7 +11,7 @@ contract ABAC is ERC20, Ownable {
     uint256 public constant MAX_SUPPLY = 21 * 10**3 * 10**6 * 10**18;
     uint256 public constant INITIAL_TOKENS_PER_BLOCK = 50 * 10**3 * 10**18;
     uint256 public constant HALVING_BLOCK_INTERVAL = 4 * 365 * 24 * 60 * 6;
-    uint256 public constant INITIAL_SUPPLY = MAX_SUPPLY * 4 / 100;
+    uint256 public constant INITIAL_SUPPLY = (MAX_SUPPLY * 4) / 100;
 
     uint256 public block_number;
     uint256 public tokensPerBlock;
@@ -24,8 +24,10 @@ contract ABAC is ERC20, Ownable {
 
     address public variationPoolAddress;
 
+    event Halving(uint256 newTokensPerBlock);
+
     constructor() ERC20("Angry Bunny Art Coin", "ABAC") {
-        _mint(msg.sender, 50 * 10 ** 18);
+        _mint(msg.sender, INITIAL_SUPPLY);
         tokensPerBlock = INITIAL_TOKENS_PER_BLOCK;
     }
 
@@ -82,13 +84,15 @@ contract ABAC is ERC20, Ownable {
         require(HALVING_BLOCK_INTERVAL > 0, "Invalid halving block interval");
         if ((block_number % HALVING_BLOCK_INTERVAL) == 0) {
             uint256 halvings = block_number / HALVING_BLOCK_INTERVAL;
-            uint256 newTokensPerBlock = INITIAL_TOKENS_PER_BLOCK * 10**18 >> halvings;
+            uint256 newTokensPerBlock = INITIAL_TOKENS_PER_BLOCK >> halvings;
 
             if (newTokensPerBlock < MIN_TOKENS_PER_BLOCK) {
                 tokensPerBlock = MIN_TOKENS_PER_BLOCK;
             } else {
                 tokensPerBlock = newTokensPerBlock;
             }
+
+            emit Halving(tokensPerBlock);
 
             patreonManager.mintNewSupply();
         }
