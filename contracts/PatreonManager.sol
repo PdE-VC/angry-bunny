@@ -16,6 +16,7 @@ contract PatreonManager is ERC20, Ownable {
 
     constructor(string memory name, string memory symbol, address _abacContract) ERC20(name, symbol) {
         _mint(msg.sender, initialSupply); // Mint initial supply to owner
+        userTokenCount[msg.sender] = initialSupply; // Track the owner's token count
         totalPeriods = 0; // No periods elapsed yet
         abacContract = _abacContract;
     }

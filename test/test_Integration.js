@@ -61,95 +61,100 @@ contract("Integration", (accounts) => {
     it("should create an nft and reward the owner since there is no patreon", async () => {
         const owner = accounts[0];
         
-        let initial_owner_balance = await abacInstance.balanceOf(owner);
-        initial_owner_balance = web3.utils.BN(initial_owner_balance, 'ether');
+        let initialOwnerBalance = await abacInstance.balanceOf(owner);
+        initialOwnerBalance = web3.utils.toBN(initialOwnerBalance);
 
         const result = await selectVariation(accounts, variationPoolManagerInstance);
 
-        let final_owner_balance = await abacInstance.balanceOf(owner);
-        final_owner_balance = web3.utils.BN(final_owner_balance);
+        const totalReward = web3.utils.toBN(await abacInstance.tokensPerBlock());
+        const patreonReward = totalReward.div(web3.utils.toBN(2));
+        const generatorReward = totalReward.mul(web3.utils.toBN(40)).div(web3.utils.toBN(100));
+        const seedCreatorReward = totalReward.mul(web3.utils.toBN(5)).div(web3.utils.toBN(100));
+        const ownerReward = totalReward.sub(generatorReward).sub(seedCreatorReward);
 
-        assert(final_owner_balance.gt(initial_owner_balance), 
-            `Owner balance did not increase {initial: ${initial_owner_balance}, final: ${final_owner_balance}}`);
+        let finalOwnerBalance = await abacInstance.balanceOf(owner);
+        finalOwnerBalance = web3.utils.toBN(finalOwnerBalance);
+        const expectedOwnerBalance = initialOwnerBalance.add(ownerReward);
+
+        assert(finalOwnerBalance.eq(expectedOwnerBalance), 
+            `Owner balance did not increase {initial: ${initialOwnerBalance}, final: ${finalOwnerBalance}}`);
     });
 
     it("should create an nft and reward every part with the correct distribution", async () => {
         const seed = 1;
-
+    
         const owner = accounts[0];
         const generatorAccount = accounts[1];
         const patreon = accounts[2];
         const seedCreator = await seedCollectionManagerInstance.getSeedCreator(seed);
-
-        // Get initial balances
-        let initial_owner_balance = await abacInstance.balanceOf(owner);
-        initial_owner_balance = web3.utils.BN(initial_owner_balance, 'ether');
-
-        let initial_generator_balance = await abacInstance.balanceOf(generatorAccount);
-        initial_generator_balance = web3.utils.BN(initial_generator_balance, 'ether');
-
-        let initial_patreon_balance = await abacInstance.balanceOf(patreon);
-        initial_patreon_balance = web3.utils.BN(initial_patreon_balance, 'ether');
-
-        let initial_seed_creator_balance = await abacInstance.balanceOf(seedCreator);
-        initial_seed_creator_balance = web3.utils.BN(initial_seed_creator_balance, 'ether');
         
+        const ownerBalance = await patreonManagerInstance.balanceOf(owner);
+        patreonManagerInstance.transfer(patreon, ownerBalance, {from : owner});
+    
+        // Get initial balances
+        let initialOwnerBalance = web3.utils.toBN(await abacInstance.balanceOf(owner));
+    
+        let initialGeneratorBalance = web3.utils.toBN(await abacInstance.balanceOf(generatorAccount));
+    
+        let initialPatreonBalance = web3.utils.toBN(await abacInstance.balanceOf(patreon));
+    
+        let initialSeedCreatorBalance = web3.utils.toBN(await abacInstance.balanceOf(seedCreator));
+    
         // Propose and select a variation
         const result = await selectVariation(accounts, variationPoolManagerInstance);
-        
+    
         // Get final balances
-        let final_owner_balance = await abacInstance.balanceOf(owner);
-        final_owner_balance = web3.utils.BN(final_owner_balance);
-
-        let final_generator_balance = await abacInstance.balanceOf(generatorAccount);
-        final_generator_balance = web3.utils.BN(final_generator_balance);
-
-        let final_patreon_balance = await abacInstance.balanceOf(patreon);
-        final_patreon_balance = web3.utils.BN(final_patreon_balance);
-
-        let final_seed_creator_balance = await abacInstance.balanceOf(seedCreator);
-        final_seed_creator_balance = web3.utils.BN(final_seed_creator_balance);
-
+        let finalOwnerBalance = web3.utils.toBN(await abacInstance.balanceOf(owner));
+    
+        let finalGeneratorBalance = web3.utils.toBN(await abacInstance.balanceOf(generatorAccount));
+    
+        let finalPatreonBalance = web3.utils.toBN(await abacInstance.balanceOf(patreon));
+    
+        let finalSeedCreatorBalance = web3.utils.toBN(await abacInstance.balanceOf(seedCreator));
+    
         // Calculate distribution rewards
-        const total_reward = await abacInstance.tokensPerBlock();
-        const patreonReward = total_reward / 2
-        const generatorReward = (total_reward * 40) / 100
-        const seedCreatorReward = (total_reward * 5) / 100
-        const owner_reward = total_reward - patreonReward - generatorReward - seedCreatorReward
-
-        const expected_owner_balance = initial_owner_balance.add(web3.utils.BN(owner_reward, 'ether'));
-        const expected_generator_balance = initial_generator_balance.add(web3.utils.BN(generatorReward, 'ether'));
-        const expected_patreon_balance = initial_patreon_balance.add(web3.utils.BN(patreonReward, 'ether'));
-        const expected_seed_creator_balance = initial_seed_creator_balance.add(web3.utils.BN(seedCreatorReward, 'ether'));
+        const totalReward = web3.utils.toBN(await abacInstance.tokensPerBlock());
+        const patreonReward = totalReward.div(web3.utils.toBN(2));
+        const generatorReward = totalReward.mul(web3.utils.toBN(40)).div(web3.utils.toBN(100));
+        const seedCreatorReward = totalReward.mul(web3.utils.toBN(5)).div(web3.utils.toBN(100));
+        const ownerReward = totalReward.sub(patreonReward).sub(generatorReward).sub(seedCreatorReward);
+    
+        const expectedOwnerBalance = initialOwnerBalance.add(ownerReward);
+        const expectedGeneratorBalance = initialGeneratorBalance.add(generatorReward);
+        const expectedPatreonBalance = initialPatreonBalance.add(patreonReward);
+        const expectedSeedCreatorBalance = initialSeedCreatorBalance.add(seedCreatorReward);
 
         // Assert balances
-        assert.equal(final_owner_balance, expected_owner_balance,
-            `Owner was not rewarded correctly {expected: ${initial_owner_balance}, final: ${final_owner_balance}}`);
-
-        assert.equal(final_generator_balance, expected_generator_balance,
-            `Generator was not rewarded correctly {expected: ${expected_generator_balance}, final: ${final_generator_balance}}`);
-
-        assert.equal(final_patreon_balance, expected_patreon_balance,
-            `Patreon was not rewarded correctly {expected: ${initial_patreon_balance}, final: ${final_patreon_balance}}`);
-
-        assert.equal(final_seed_creator_balance, expected_seed_creator_balance,
-            `Seed creator was not rewarded correctly {expected: ${initial_seed_creator_balance}, final: ${final_seed_creator_balance}}`);
+        const ownerBalanceCorrect = finalOwnerBalance.eq(expectedOwnerBalance);
+        assert(ownerBalanceCorrect, `Owner was not rewarded correctly {expected: ${expectedOwnerBalance.toString()}, final: ${finalOwnerBalance.toString()}}`);
+    
+        const generatorBalanceCorrect = finalGeneratorBalance.eq(expectedGeneratorBalance);
+        assert(generatorBalanceCorrect, `Generator was not rewarded correctly {expected: ${expectedGeneratorBalance.toString()}, final: ${finalGeneratorBalance.toString()}}`);
+    
+        const patreonBalanceCorrect = finalPatreonBalance.eq(expectedPatreonBalance);
+        assert(patreonBalanceCorrect, `Patreon was not rewarded correctly {expected: ${expectedPatreonBalance.toString()}, final: ${finalPatreonBalance.toString()}}`);
+    
+        const seedCreatorBalanceCorrect = finalSeedCreatorBalance.eq(expectedSeedCreatorBalance);
+        assert(seedCreatorBalanceCorrect, `Seed creator was not rewarded correctly {expected: ${expectedSeedCreatorBalance.toString()}, final: ${finalSeedCreatorBalance.toString()}}`);
     });
-
+    
     // // TODO: Tests de halving
-
-    // it("should create an nft and reward a patreon since there is at least one", async () => {
-    //     ...
-    // });
 
     // // TODO: Algun test que pase la primera validación de la existencia de seed pero falle al encontrar esa misma seed en seedCollectionManager
 
-    // it("should reward all the parts with te correct distribution", async () => {
-    //     ...
-    // });
-
     // it("should fail to mint a new variation since the nft limit at the seed collection is reached", async () => {
-    //     ...
+    //     const nftLimit = (await seedCollectionManagerInstance.maxSeedVariations()).toNumber();
+    //     const remainingVariations = nftLimit - (await variationPoolManagerInstance.validatedVariationCountBySeed(1)).toNumber();
+    //     for (let i = 0; i < remainingVariations; i++) {
+    //         await selectVariation(accounts, variationPoolManagerInstance);
+    //     }
+
+    //     try {
+    //         await selectVariation(accounts, variationPoolManagerInstance);
+    //     } catch (error) {
+    //         assert(error.message.includes("Seed reached the limit of variations"), 
+    //             `Error message does not match expected: Seed reached the limit of variations - found: ${error.message}`);
+    //     }
     // });
 
     // it("should create a new NFT variation from curator validation", async () => {
