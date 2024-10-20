@@ -8,9 +8,8 @@ contract PatreonManager is ERC20, Ownable {
 
     uint256 public totalPeriods;  // Number of periods elapsed
     uint256 public constant initialSupply = 1000; // Initial supply (1,000 tokens)
-    uint256 public constant growthFactor = 2072; // Growth factor (approximated 2.072 * 1000 for fixed point calculation)
     uint256 public constant maxGrowthPeriods = 4; // Growth lasts for 4 periods (16 years)
-    mapping(address => uint256) public userTokenCount; // Tracking users' token count
+    mapping(address => uint256) public userTokenCount; // Tracking users token count
     address[] public holders; // List of holders
     address abacContract; // Address of the ABAC contract
 
@@ -40,10 +39,9 @@ contract PatreonManager is ERC20, Ownable {
 
     // Calculate the supply to mint based on the exponential growth in the first 16 years, and no growth after that
     function calculateSupply() internal view returns (uint256) {
-        if (totalPeriods <= maxGrowthPeriods) {
+        if (totalPeriods < maxGrowthPeriods) {
             // Exponential growth during the first 16 years
-            uint256 newSupply = initialSupply * (growthFactor**totalPeriods) / (1000**totalPeriods);
-            return newSupply - totalSupply(); // Only mint the difference
+            return initialSupply * (2 ** totalPeriods);
         } else {
             // After 16 years, no more new tokens are minted
             return 0;

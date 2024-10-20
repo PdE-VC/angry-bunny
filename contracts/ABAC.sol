@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IPatreonManager.sol";
-import "./interfaces/ISeedCollectionManager.sol";
+import "./interfaces/IAreaCollectionManager.sol";
 
 contract ABAC is ERC20, Ownable {
     uint256 public constant MIN_TOKENS_PER_BLOCK = 10;
@@ -16,15 +16,16 @@ contract ABAC is ERC20, Ownable {
     uint256 public block_number;
     uint256 public tokensPerBlock;
 
-    bool public seedCollectionManagerAlreadySet = false;
+    bool public areaCollectionManagerAlreadySet = false;
     bool public patreonManagerAddressAlreadySet = false;
 
-    ISeedCollectionManager public seedCollectionManager;
+    IAreaCollectionManager public areaCollectionManager;
     IPatreonManager public patreonManager;
 
-    address public variationPoolAddress;
+    address public artWorkPoolAddress;
 
     event Halving(uint256 newTokensPerBlock);
+    event ArtWorkMinted(address artist, uint256 areaId, string imageURI, address selectedPatreon, address areaCreator);
 
     constructor() ERC20("Angry Bunny Art Coin", "ABAC") {
         _mint(msg.sender, INITIAL_SUPPLY);
@@ -38,46 +39,48 @@ contract ABAC is ERC20, Ownable {
         patreonManagerAddressAlreadySet = true;
     }
 
-    function setCollectionManagerAddress(address seedCollectionManagerAddress) external onlyOwner {
-        require(!seedCollectionManagerAlreadySet, "Address already set");
-        require(seedCollectionManagerAddress != address(0), "Invalid address");
-        seedCollectionManager = ISeedCollectionManager(seedCollectionManagerAddress);
-        seedCollectionManagerAlreadySet = true;
+    function setAreaCollectionManagerAddress(address areaCollectionManagerAddress) external onlyOwner {
+        require(!areaCollectionManagerAlreadySet, "Address already set");
+        require(areaCollectionManagerAddress != address(0), "Invalid address");
+        areaCollectionManager = IAreaCollectionManager(areaCollectionManagerAddress);
+        areaCollectionManagerAlreadySet = true;
     }
 
-    function setVariationPoolAddress(address _variationPoolAddress) external onlyOwner {
-        require(variationPoolAddress == address(0), "Address already set");
-        require(_variationPoolAddress != address(0), "Invalid address");
-        variationPoolAddress = _variationPoolAddress;
+    function setArtWorkPoolAddress(address _artWorkPoolAddress) external onlyOwner {
+        require(artWorkPoolAddress == address(0), "Address already set");
+        require(_artWorkPoolAddress != address(0), "Invalid address");
+        artWorkPoolAddress = _artWorkPoolAddress;
     }
 
-    modifier onlyVariationPool() {
-        require(msg.sender == variationPoolAddress,
-                "Caller is not the variation pool");
+    modifier onlyArtWorkPool() {
+        require(msg.sender == artWorkPoolAddress,
+                "Caller is not the art work pool");
         _;
     }
 
-    function mintTokenAndVariation(uint256 seed, address generator, string memory contentUri) external onlyVariationPool {
+    function mintTokenAndArtWork(uint256 area, address artist, string memory contentUri) external onlyArtWorkPool {
         require(totalSupply() + tokensPerBlock <= MAX_SUPPLY, "Max supply reached");
 
         _applyHalving();
 
         address selectedPatreon = patreonManager.selectRandomHolder();
 
-        address seedCreator = seedCollectionManager.getSeedCreator(seed);
+        address areaCreator = areaCollectionManager.getAreaCreator(area);
 
         // TODO: Pensar en la distribución de los tokens
         uint256 patreonReward = tokensPerBlock / 2; // 50%
-        uint256 variationGeneratorReward = (tokensPerBlock * 40) / 100; // 40%
-        uint256 seedCreatorReward = (tokensPerBlock * 5) / 100; // 5%
-        uint256 ownerReward = tokensPerBlock - (patreonReward + variationGeneratorReward + seedCreatorReward); // 5% + cualquier residuo
+        uint256 artistReward = (tokensPerBlock * 40) / 100; // 40%
+        uint256 areaCreatorReward = (tokensPerBlock * 5) / 100; // 5%
+        uint256 ownerReward = tokensPerBlock - (patreonReward + artistReward + areaCreatorReward); // 5% + cualquier residuo
 
         _mint(selectedPatreon, patreonReward);
-        _mint(generator, variationGeneratorReward);
-        _mint(seedCreator, seedCreatorReward);
+        _mint(artist, artistReward);
+        _mint(areaCreator, areaCreatorReward);
         _mint(owner(), ownerReward);
 
-        seedCollectionManager.mintVariation(seed, contentUri);
+        areaCollectionManager.mintArtWork(area, contentUri);
+
+        emit ArtWorkMinted(artist, area, contentUri, selectedPatreon, areaCreator);
     }
 
     function _applyHalving() internal {

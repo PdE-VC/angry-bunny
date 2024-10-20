@@ -1,8 +1,8 @@
 const ABAC = artifacts.require("ABAC");
 const PatreonManager = artifacts.require("PatreonManager");
-const SeedCollectionManager = artifacts.require("SeedCollectionManager");
-const VariationPoolManager = artifacts.require("VariationPoolManager");
-const SeedCollection = artifacts.require("SeedCollection");
+const AreaCollectionManager = artifacts.require("AreaCollectionManager");
+const ArtWorkPoolManager = artifacts.require("ArtWorkPoolManager");
+const AreaCollection = artifacts.require("AreaCollection");
 const env = process.env.NODE_ENV || "test";
 
 module.exports = async function (deployer) {
@@ -14,24 +14,24 @@ module.exports = async function (deployer) {
   await deployer.deploy(PatreonManager, "Patreon Manager NTFS", "PM", abacInstance.address);
   const patreonManagerInstance = await PatreonManager.deployed();
   
-  // Deploy SeedCollectionManager contract with ABAC address
-  await deployer.deploy(SeedCollectionManager, abacInstance.address);
-  const seedCollectionManagerInstance = await SeedCollectionManager.deployed();
+  // Deploy AreaCollectionManager contract with ABAC address
+  await deployer.deploy(AreaCollectionManager, abacInstance.address);
+  const areaCollectionManagerInstance = await AreaCollectionManager.deployed();
   
-  // Deploy VariationPoolManager contract with ABAC address
-  await deployer.deploy(VariationPoolManager, abacInstance.address, seedCollectionManagerInstance.address);
+  // Deploy ArtWorkPoolManager contract with ABAC address
+  await deployer.deploy(ArtWorkPoolManager, abacInstance.address, areaCollectionManagerInstance.address);
   
-  // Set SeedCollectionManager contract address in ABAC contract
-  await abacInstance.setCollectionManagerAddress(SeedCollectionManager.address);
+  // Set AreaCollectionManager contract address in ABAC contract
+  await abacInstance.setAreaCollectionManagerAddress(AreaCollectionManager.address);
 
   // Set PatreonManager contract address in ABAC contract
   await abacInstance.setPatreonManagerAddress(PatreonManager.address);
 
-  // Set VariationPoolManager contract address in ABAC contract
-  await abacInstance.setVariationPoolAddress(VariationPoolManager.address);
+  // Set ArtWorkPoolManager contract address in ABAC contract
+  await abacInstance.setArtWorkPoolAddress(ArtWorkPoolManager.address);
 
   // ONLY FOR TESTING
   if (env === "test") {
-    await deployer.deploy(SeedCollection, "Seed Collection NTFS", "SC", 1, 20, 1, "http://...", seedCollectionManagerInstance.address);
+    await deployer.deploy(AreaCollection, "Area Collection NTFS", "SC", 1, 20, "http://...", areaCollectionManagerInstance.address);
   }
 };

@@ -1,60 +1,60 @@
-const SeedCollectionManager = artifacts.require("SeedCollectionManager");
-const VariationPoolManager = artifacts.require("VariationPoolManager");
+const AreaCollectionManager = artifacts.require("AreaCollectionManager");
+const ArtWorkPoolManager = artifacts.require("ArtWorkPoolManager");
 const PatreonManager = artifacts.require("PatreonManager");
 const ABAC = artifacts.require("ABAC");
 
-async function selectVariation(accounts, variationPoolManagerInstance) {
-    const numberVariations = await variationPoolManagerInstance.getVariationsLength(1);
+async function selectArtWork(accounts, artWorkPoolManagerInstance) {
+    const numberArtWorks = await artWorkPoolManagerInstance.getArtWorksLength(1);
     const difficulty = 3
-    await variationPoolManagerInstance.setDifficulty(difficulty, { from: accounts[0] });
-    for (let i = 0; i < difficulty - numberVariations; i++) {
-        await variationPoolManagerInstance.proposeVariation(1, `http://${i}`, accounts[1], { from: accounts[0] });
+    await artWorkPoolManagerInstance.setDifficulty(difficulty, { from: accounts[0] });
+    for (let i = 0; i < difficulty - numberArtWorks; i++) {
+        await artWorkPoolManagerInstance.proposeArtWork(1, `http://${i}`, accounts[1], { from: accounts[0] });
     }
     
-    return await variationPoolManagerInstance.selectVariation(1, 1, { from: accounts[0] });
+    return await artWorkPoolManagerInstance.selectArtWork(1, 1, { from: accounts[0] });
 }
 
 contract("Integration", (accounts) => {
     console.log("Running Integration tests");
-    let seedCollectionManagerInstance;
-    let variationPoolManagerInstance;
+    let areaCollectionManagerInstance;
+    let artWorkPoolManagerInstance;
     let patreonManagerInstance;
     let abacInstance;
 
     before(async () => {
-        seedCollectionManagerInstance = await SeedCollectionManager.deployed();
-        variationPoolManagerInstance = await VariationPoolManager.deployed();
+        areaCollectionManagerInstance = await AreaCollectionManager.deployed();
+        artWorkPoolManagerInstance = await ArtWorkPoolManager.deployed();
         patreonManagerInstance = await PatreonManager.deployed();
         abacInstance = await ABAC.deployed();
     });
 
-    it("should fail to create a new variation since there is no seed", async () => {
+    it("should fail to create a new art work since there is no area", async () => {
         try {
-            await variationPoolManagerInstance.proposeVariation(1, "contentURI", accounts[1], { from: accounts[0] });
+            await artWorkPoolManagerInstance.proposeArtWork(1, "contentURI", accounts[1], { from: accounts[0] });
         } catch (error) {
-            assert(error.message.includes("Seed does not exist"), 
-                `Error message does not match expected: Seed does not exist - found: ${error.message}`);
+            assert(error.message.includes("Area does not exist"), 
+                `Error message does not match expected: Area does not exist - found: ${error.message}`);
         }
     });
 
-    it("should emit a new validation event since the seed is ready to validate", async () => {
-        await seedCollectionManagerInstance.createSeed("Seed1", "S1", 1, 1, "ipfs uri", accounts[3], { from: accounts[0] });
-        await variationPoolManagerInstance.setDifficulty(1, { from: accounts[0] });
-        const result = await variationPoolManagerInstance.proposeVariation(1, "contentURI", accounts[1], { from: accounts[0] });
+    it("should emit a new validation event since the area is ready to validate", async () => {
+        await areaCollectionManagerInstance.createArea("Area1", "S1", 1, 1, "ipfs uri", accounts[3], { from: accounts[0] });
+        await artWorkPoolManagerInstance.setDifficulty(1, { from: accounts[0] });
+        const result = await artWorkPoolManagerInstance.proposeArtWork(1, "contentURI", accounts[1], { from: accounts[0] });
 
-        assert.equal(result.logs[1].event, "SeedReadyToCurate", "Validation event not emitted");
-        assert.equal(result.logs[1].args.seedId.toNumber(), 1, "SeedId does not match expected");
+        assert.equal(result.logs[1].event, "AreaReadyToCurate", "Validation event not emitted");
+        assert.equal(result.logs[1].args.areaId.toNumber(), 1, "AreaId does not match expected");
     });
 
-    it("should not emit a new validation event since the seed is not ready to validate", async () => {
-        const variations = await variationPoolManagerInstance.validatedVariationCountBySeed(1);
-        await variationPoolManagerInstance.setDifficulty(variations + 3, { from: accounts[0] });
-        const result = await variationPoolManagerInstance.proposeVariation(1, "contentURI", accounts[1], { from: accounts[0] });
+    it("should not emit a new validation event since the area is not ready to validate", async () => {
+        const artWorks = await artWorkPoolManagerInstance.validatedArtWorkCountByArea(1);
+        await artWorkPoolManagerInstance.setDifficulty(artWorks + 3, { from: accounts[0] });
+        const result = await artWorkPoolManagerInstance.proposeArtWork(1, "contentURI", accounts[1], { from: accounts[0] });
 
         assert.equal(result.logs.length, 1, "Validation event emitted");
     });
 
-    // it("should fail to validate a new variation since the limit for ABAC tokens is reached", async () => {
+    // it("should fail to validate a new artWork since the limit for ABAC tokens is reached", async () => {
     //     ...
     // });
 
@@ -64,13 +64,13 @@ contract("Integration", (accounts) => {
         let initialOwnerBalance = await abacInstance.balanceOf(owner);
         initialOwnerBalance = web3.utils.toBN(initialOwnerBalance);
 
-        const result = await selectVariation(accounts, variationPoolManagerInstance);
+        const result = await selectArtWork(accounts, artWorkPoolManagerInstance);
 
         const totalReward = web3.utils.toBN(await abacInstance.tokensPerBlock());
         const patreonReward = totalReward.div(web3.utils.toBN(2));
         const generatorReward = totalReward.mul(web3.utils.toBN(40)).div(web3.utils.toBN(100));
-        const seedCreatorReward = totalReward.mul(web3.utils.toBN(5)).div(web3.utils.toBN(100));
-        const ownerReward = totalReward.sub(generatorReward).sub(seedCreatorReward);
+        const areaCreatorReward = totalReward.mul(web3.utils.toBN(5)).div(web3.utils.toBN(100));
+        const ownerReward = totalReward.sub(generatorReward).sub(areaCreatorReward);
 
         let finalOwnerBalance = await abacInstance.balanceOf(owner);
         finalOwnerBalance = web3.utils.toBN(finalOwnerBalance);
@@ -81,12 +81,12 @@ contract("Integration", (accounts) => {
     });
 
     it("should create an nft and reward every part with the correct distribution", async () => {
-        const seed = 1;
+        const area = 1;
     
         const owner = accounts[0];
         const generatorAccount = accounts[1];
         const patreon = accounts[2];
-        const seedCreator = await seedCollectionManagerInstance.getSeedCreator(seed);
+        const areaCreator = await areaCollectionManagerInstance.getAreaCreator(area);
         
         const ownerBalance = await patreonManagerInstance.balanceOf(owner);
         patreonManagerInstance.transfer(patreon, ownerBalance, {from : owner});
@@ -98,10 +98,10 @@ contract("Integration", (accounts) => {
     
         let initialPatreonBalance = web3.utils.toBN(await abacInstance.balanceOf(patreon));
     
-        let initialSeedCreatorBalance = web3.utils.toBN(await abacInstance.balanceOf(seedCreator));
+        let initialAreaCreatorBalance = web3.utils.toBN(await abacInstance.balanceOf(areaCreator));
     
-        // Propose and select a variation
-        const result = await selectVariation(accounts, variationPoolManagerInstance);
+        // Propose and select a artWork
+        const result = await selectArtWork(accounts, artWorkPoolManagerInstance);
     
         // Get final balances
         let finalOwnerBalance = web3.utils.toBN(await abacInstance.balanceOf(owner));
@@ -110,19 +110,19 @@ contract("Integration", (accounts) => {
     
         let finalPatreonBalance = web3.utils.toBN(await abacInstance.balanceOf(patreon));
     
-        let finalSeedCreatorBalance = web3.utils.toBN(await abacInstance.balanceOf(seedCreator));
+        let finalAreaCreatorBalance = web3.utils.toBN(await abacInstance.balanceOf(areaCreator));
     
         // Calculate distribution rewards
         const totalReward = web3.utils.toBN(await abacInstance.tokensPerBlock());
         const patreonReward = totalReward.div(web3.utils.toBN(2));
         const generatorReward = totalReward.mul(web3.utils.toBN(40)).div(web3.utils.toBN(100));
-        const seedCreatorReward = totalReward.mul(web3.utils.toBN(5)).div(web3.utils.toBN(100));
-        const ownerReward = totalReward.sub(patreonReward).sub(generatorReward).sub(seedCreatorReward);
+        const areaCreatorReward = totalReward.mul(web3.utils.toBN(5)).div(web3.utils.toBN(100));
+        const ownerReward = totalReward.sub(patreonReward).sub(generatorReward).sub(areaCreatorReward);
     
         const expectedOwnerBalance = initialOwnerBalance.add(ownerReward);
         const expectedGeneratorBalance = initialGeneratorBalance.add(generatorReward);
         const expectedPatreonBalance = initialPatreonBalance.add(patreonReward);
-        const expectedSeedCreatorBalance = initialSeedCreatorBalance.add(seedCreatorReward);
+        const expectedAreaCreatorBalance = initialAreaCreatorBalance.add(areaCreatorReward);
 
         // Assert balances
         const ownerBalanceCorrect = finalOwnerBalance.eq(expectedOwnerBalance);
@@ -134,30 +134,39 @@ contract("Integration", (accounts) => {
         const patreonBalanceCorrect = finalPatreonBalance.eq(expectedPatreonBalance);
         assert(patreonBalanceCorrect, `Patreon was not rewarded correctly {expected: ${expectedPatreonBalance.toString()}, final: ${finalPatreonBalance.toString()}}`);
     
-        const seedCreatorBalanceCorrect = finalSeedCreatorBalance.eq(expectedSeedCreatorBalance);
-        assert(seedCreatorBalanceCorrect, `Seed creator was not rewarded correctly {expected: ${expectedSeedCreatorBalance.toString()}, final: ${finalSeedCreatorBalance.toString()}}`);
+        const areaCreatorBalanceCorrect = finalAreaCreatorBalance.eq(expectedAreaCreatorBalance);
+        assert(areaCreatorBalanceCorrect, `Area creator was not rewarded correctly {expected: ${expectedAreaCreatorBalance.toString()}, final: ${finalAreaCreatorBalance.toString()}}`);
+    });
+
+    it("should emit an AreaReadyToCurate event since the difficulty was changed to lower than the number of art works", async () => {
+        const artWorks = await artWorkPoolManagerInstance.validatedArtWorkCountByArea(1);
+        await artWorkPoolManagerInstance.setDifficulty(artWorks - 1, { from: accounts[0] });
+        const result = await artWorkPoolManagerInstance.proposeArtWork(1, "contentURI", accounts[1], { from: accounts[0] });
+
+        assert.equal(result.logs[1].event, "AreaReadyToCurate", "Validation event not emitted");
+        assert.equal(result.logs[1].args.areaId.toNumber(), 1, "AreaId does not match expected");
     });
     
     // // TODO: Tests de halving
 
-    // // TODO: Algun test que pase la primera validación de la existencia de seed pero falle al encontrar esa misma seed en seedCollectionManager
+    // // TODO: Algun test que pase la primera validación de la existencia de area pero falle al encontrar esa misma area en areaCollectionManager
 
-    // it("should fail to mint a new variation since the nft limit at the seed collection is reached", async () => {
-    //     const nftLimit = (await seedCollectionManagerInstance.maxSeedVariations()).toNumber();
-    //     const remainingVariations = nftLimit - (await variationPoolManagerInstance.validatedVariationCountBySeed(1)).toNumber();
-    //     for (let i = 0; i < remainingVariations; i++) {
-    //         await selectVariation(accounts, variationPoolManagerInstance);
+    // it("should fail to mint a new artWork since the nft limit at the area collection is reached", async () => {
+    //     const nftLimit = (await areaCollectionManagerInstance.maxAreaArtWorks()).toNumber();
+    //     const remainingArtWorks = nftLimit - (await artWorkPoolManagerInstance.validatedArtWorkCountByArea(1)).toNumber();
+    //     for (let i = 0; i < remainingArtWorks; i++) {
+    //         await selectArtWork(accounts, artWorkPoolManagerInstance);
     //     }
 
     //     try {
-    //         await selectVariation(accounts, variationPoolManagerInstance);
+    //         await selectArtWork(accounts, artWorkPoolManagerInstance);
     //     } catch (error) {
-    //         assert(error.message.includes("Seed reached the limit of variations"), 
-    //             `Error message does not match expected: Seed reached the limit of variations - found: ${error.message}`);
+    //         assert(error.message.includes("Area reached the limit of artWorks"), 
+    //             `Error message does not match expected: Area reached the limit of artWorks - found: ${error.message}`);
     //     }
     // });
 
-    // it("should create a new NFT variation from curator validation", async () => {
+    // it("should create a new NFT artWork from curator validation", async () => {
     //     ...
     // });
     

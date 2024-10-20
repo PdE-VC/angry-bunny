@@ -15,25 +15,35 @@ contract("ABAC", (accounts) => {
 
     it("should fail to update the collection manager address if the caller is not the owner", async () => {
         try {
-            await abacInstance.setCollectionManagerAddress(accounts[1], { from: accounts[1] });
+            await abacInstance.setAreaCollectionManagerAddress(accounts[1], { from: accounts[1] });
             assert.fail("The transaction should have thrown an error");
         } catch (error) {
             assert(error.message.includes("Ownable: caller is not the owner"), error.message);
         }
     });
 
-    it("should fail to update the variation pool address if the caller is not the owner", async () => {
+    it("should fail to update the art work pool address if the caller is not the owner", async () => {
         try {
-            await abacInstance.setVariationPoolAddress(accounts[1], { from: accounts[1] });
+            await abacInstance.setArtWorkPoolAddress(accounts[1], { from: accounts[1] });
             assert.fail("The transaction should have thrown an error");
         } catch (error) {
+            assert(error.message.includes("Ownable: caller is not the owner"), error.message);
+        }
+    });
+
+    it("should fail to update the patreon manager address if the caller is not the owner", async () => {
+        try {
+            await abacInstance.setPatreonManagerAddress(accounts[1], { from: accounts[1] });
+            assert.fail("The transaction should have thrown an error");
+        }
+        catch (error) {
             assert(error.message.includes("Ownable: caller is not the owner"), error.message);
         }
     });
 
     it("should fail to update the collection manager address if it has already been updated", async () => {
         try {
-            await abacInstance.setCollectionManagerAddress(accounts[2]);
+            await abacInstance.setAreaCollectionManagerAddress(accounts[2]);
             assert.fail("The transaction should have thrown an error");
         } catch (error) {
             assert(error.message.includes("Address already set"), error.message);
@@ -42,7 +52,16 @@ contract("ABAC", (accounts) => {
 
     it("should fail to update the variation pool address if it has already been updated", async () => {
         try {
-            await abacInstance.setVariationPoolAddress(accounts[2]);
+            await abacInstance.setArtWorkPoolAddress(accounts[2]);
+            assert.fail("The transaction should have thrown an error");
+        } catch (error) {
+            assert(error.message.includes("Address already set"), error.message);
+        }
+    });
+
+    it("should fail to update the patreon manager address if it has already been updated", async () => {
+        try {
+            await abacInstance.setPatreonManagerAddress(accounts[4]);
             assert.fail("The transaction should have thrown an error");
         } catch (error) {
             assert(error.message.includes("Address already set"), error.message);
