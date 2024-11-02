@@ -11,13 +11,13 @@ contract PatreonManager is ERC20, Ownable {
     uint256 public constant maxGrowthPeriods = 4; // Growth lasts for 4 periods (16 years)
     mapping(address => uint256) public userTokenCount; // Tracking users token count
     address[] public holders; // List of holders
-    address abacContract; // Address of the ABAC contract
+    address angryContract; // Address of the ANGRY contract
 
-    constructor(string memory name, string memory symbol, address _abacContract) ERC20(name, symbol) {
+    constructor(string memory name, string memory symbol, address _angryContract) ERC20(name, symbol) {
         _mint(msg.sender, initialSupply); // Mint initial supply to owner
         userTokenCount[msg.sender] = initialSupply; // Track the owner's token count
         totalPeriods = 0; // No periods elapsed yet
-        abacContract = _abacContract;
+        angryContract = _angryContract;
     }
 
     // Override decimals to make the token non-divisible
@@ -25,13 +25,13 @@ contract PatreonManager is ERC20, Ownable {
         return 0;
     }
 
-    modifier onlyABAC() {
-        require(msg.sender == abacContract, "Caller is not ABAC contract");
+    modifier onlyANGRY() {
+        require(msg.sender == angryContract, "Caller is not ANGRY contract");
         _;
     }
 
     // Minting function that only the owner can call, and only when a period has passed
-    function mintNewSupply() external onlyABAC {
+    function mintNewSupply() external onlyANGRY {
         totalPeriods++;
         uint256 newSupply = calculateSupply();
         _mint(owner(), newSupply); // Mint to owner

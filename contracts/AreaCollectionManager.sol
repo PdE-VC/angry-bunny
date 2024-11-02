@@ -8,22 +8,19 @@ contract AreaCollectionManager is Ownable {
     
     uint256 public areaCounter;
 
-    // WATCH OUT!! ALSO IN VariationPoolManager.sol
-    uint256 public constant maxArt = 100;
+    address public angryContract;
 
-    address public abacContract;
-
-    constructor(address _abacContract) {
-        require(_abacContract != address(0), "Invalid ABAC contract address");
-        abacContract = _abacContract;
+    constructor(address _angryContract) {
+        require(_angryContract != address(0), "Invalid ANGRY contract address");
+        angryContract = _angryContract;
     }
 
-    modifier onlyABAC() {
-        require(msg.sender == abacContract, "Caller is not ABAC contract");
+    modifier onlyANGRY() {
+        require(msg.sender == angryContract, "Caller is not ANGRY contract");
         _;
     }
 
-    function mintArtWork(uint256 areaId, string memory imageURI) external onlyABAC {
+    function mintArtWork(uint256 areaId, string memory imageURI) external onlyANGRY {
         AreaCollection areaCollection = AreaCollection(areas[areaId]);
         require(areaCollection.emmitedArtWorks() < areaCollection.maxArtWorks(), "Max variations reached");
         areaCollection.createNFTArt(owner(), imageURI);

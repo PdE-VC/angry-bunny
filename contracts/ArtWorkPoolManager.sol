@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./interfaces/IABACToken.sol";
+import "./interfaces/IANGRYToken.sol";
 import "./interfaces/IAreaCollectionManager.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -11,7 +11,7 @@ contract ArtWorkPoolManager is Ownable {
         address artist;
     }
 
-    IABACToken public abacToken;
+    IANGRYToken public angryToken;
     IAreaCollectionManager public areaCollectionManager;
 
     mapping(uint256 => ArtWork[]) public artWorksByArea;
@@ -22,8 +22,8 @@ contract ArtWorkPoolManager is Ownable {
     event ArtWorkProposed(uint256 areaId, address miner, string contentUri, address artist);
     event AreaReadyToCurate(uint256 areaId);
 
-    constructor(address _abacToken, address areaCollectionManagerAddress) {
-        abacToken = IABACToken(_abacToken);
+    constructor(address _angryToken, address areaCollectionManagerAddress) {
+        angryToken = IANGRYToken(_angryToken);
         areaCollectionManager = IAreaCollectionManager(areaCollectionManagerAddress);
     }
 
@@ -46,7 +46,7 @@ contract ArtWorkPoolManager is Ownable {
         require(areaCollectionManager.areaCounter() >= areaId && areaId > 0, "Area does not exist");
         require(artist != address(0), "Artist address is required");
         require(!areaCollectionManager.areaIsFull(areaId), "Area collection is full");
-        require(artWorksByArea[areaId].length < difficulty, "ArtWork limit reached for this area");
+        require(artWorksByArea[areaId].length < difficulty, "ArtWork limit reached for this area ");
 
         artWorksByArea[areaId].push(ArtWork(contentUri, artist));
         emit ArtWorkProposed(areaId, msg.sender, contentUri, artist);
@@ -74,7 +74,7 @@ contract ArtWorkPoolManager is Ownable {
 
         ArtWork memory selectedArtWork = artWorks[artWorkIndex];
 
-        abacToken.mintTokenAndArtWork(areaId, selectedArtWork.artist,
+        angryToken.mintTokenAndArtWork(areaId, selectedArtWork.artist,
                                             selectedArtWork.contentUri);
 
         // Limpiar las variaciones de la semilla

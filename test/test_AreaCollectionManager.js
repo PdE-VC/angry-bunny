@@ -31,14 +31,14 @@ contract("AreaCollectionManager", (accounts) => {
         }
     });
 
-    it("should fail to mint an art work since the caller is not ABAC", async () => {
+    it("should fail to mint an art work since the caller is not ANGRY", async () => {
         try {
             await areaCollectionManagerInstance.createArea("area name", "symbol", 1, 5, "http...", accounts[1], { from: accounts[0] });
             const areaId = await areaCollectionManagerInstance.areaCounter();
             await areaCollectionManagerInstance.mintArtWork(areaId, "http...", { from: accounts[1] });
             assert.fail("The function did not throw");
         } catch (error) {
-            assert(error.message.includes("Caller is not ABAC contract"), error.message);
+            assert(error.message.includes("Caller is not ANGRY contract"), error.message);
         }
     });
 });

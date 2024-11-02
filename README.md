@@ -1,14 +1,14 @@
-# Angry Bunny Art Coin (ABAC) - ERC20 & ERC721 Cryptocurrency
+# Angry Bunny (ANGRY) - ERC20 & ERC721 Cryptocurrency
 
 ## Overview
 
-**Angry Bunny Art Coin (ABAC)** is a pioneering cryptocurrency that combines the ERC20 and ERC721 protocols to address the challenges of massive new artistic capabilities enabled by generative AI. The project integrates Python-based server solutions to create a value-backed currency through dynamic NFT collections. Each collection is generated based on unique seed prompts, with the ability to create physical artworks embedded with Physical Backed Tokens (PBTs). 
+**Angry Bunny (ANGRY)** is a pioneering cryptocurrency that combines the ERC20 and ERC721 protocols to address the challenges of massive new artistic capabilities enabled by generative AI. The project integrates Python-based server solutions to create a value-backed currency through dynamic NFT collections. Each collection is generated based on unique seed prompts, with the ability to create physical artworks embedded with Physical Backed Tokens (PBTs). 
 
-ABAC is not just a cryptocurrency; it is a solution to the evolving landscape of generative art. It provides a platform where AI-generated art can be minted, curated, and transformed into physical pieces, all while being integrated into the blockchain. The project aims to make these new forms of art accessible and public, allowing anyone to participate in the creation and ownership of generative art.
+ANGRY is not just a cryptocurrency; it is a solution to the evolving landscape of generative art. It provides a platform where AI-generated art can be minted, curated, and transformed into physical pieces, all while being integrated into the blockchain. The project aims to make these new forms of art accessible and public, allowing anyone to participate in the creation and ownership of generative art.
 
 ## Key Features
 
-- **Dual Protocols**: Utilizes the ERC20 protocol for the ABAC cryptocurrency and the ERC721 protocol for managing the dynamic NFT collections.
+- **Dual Protocols**: Utilizes the ERC20 protocol for the ANGRY cryptocurrency and the ERC721 protocol for managing the dynamic NFT collections.
 - **Generative Art NFTs**: NFTs are generated based on unique seed variations, creating diverse collections of digital art that evolve as new seeds are introduced.
 - **Physical Backed Tokens (PBTs)**: Completed collections allow users to select an NFT to be realized as a physical artwork, complete with a PBT chip that links it to the blockchain.
 - **Community-Curated Collections**: The community collaborates in curating the final collections, blending both digital and physical art forms.
@@ -21,7 +21,7 @@ ABAC is not just a cryptocurrency; it is a solution to the evolving landscape of
 angry-bunny-art-coin/
 │
 ├── contracts/
-│   ├── ABAC.sol              # ERC20 Smart Contract for Angry Bunny Art Coin
+│   ├── ANGRY.sol              # ERC20 Smart Contract for Angry Bunny
 │   ├── NFTCollection.sol     # Base Smart Contract for NFT Collection Management
 │   ├── INFTCollection.sol    # Interface for interaction with NFT Smart Contract
 │   ├── PBT.sol               # Smart Contract for Physical Backed Tokens
@@ -43,7 +43,7 @@ angry-bunny-art-coin/
 │
 ├── tests/
 │   ├── contract_tests/
-│   │   ├── test_ABAC.js      # Unit tests for the ABAC smart contract
+│   │   ├── test_ANGRY.js      # Unit tests for the ANGRY smart contract
 │   │   ├── test_NFT.sol      # Unit tests for the NFT Collection contract
 │   │   └── README.md         # Documentation for contract tests
 │   ├── server_tests/
@@ -52,7 +52,7 @@ angry-bunny-art-coin/
 │   └── README.md             # Documentation for testing 
 │
 ├── assets/
-│   ├── icon.png              # Icon for Angry Bunny Art Coin
+│   ├── icon.png              # Icon for Angry Bunny
 │   └── diagram.png           # Project Diagram
 │
 ├── README.md                 # Main project documentation
@@ -74,7 +74,7 @@ All NFTs and the value they generate are part of the public domain, making them 
 
 ## Getting Started
 
-To start using the Angry Bunny Art Coin system, please refer to the [README.md](server/README.md) file in the `server/` directory for detailed instructions on setting up the Python server and deploying the smart contracts.
+To start using the Angry Bunny system, please refer to the [README.md](server/README.md) file in the `server/` directory for detailed instructions on setting up the Python server and deploying the smart contracts.
 
 ## Contributing
 
@@ -86,4 +86,4 @@ This project is licensed under the MIT License - see the `LICENSE` file for deta
 
 ## Art Coin Diagram
 
-![Angry Bunny Art Coin Diagram](assets/diagram.png)
+![Angry Bunny Diagram](assets/diagram.png)

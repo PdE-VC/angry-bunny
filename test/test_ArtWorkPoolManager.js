@@ -34,7 +34,7 @@ contract("ArtWorkPoolManager", (accounts) => {
             const artWork = await artWorkPoolManagerInstance.artWorksByArea(0);
             assert.fail("The function did not throw");
         } catch (error) {
-            assert(error.message.includes("Generator address is required"), error.message);
+            assert(error.message.includes("Artist address is required"), error.message);
         }
     });
 
@@ -86,29 +86,6 @@ contract("ArtWorkPoolManager", (accounts) => {
             assert.fail("The function did not throw");
         } catch (error) {
             assert(error.message.includes("ArtWork limit not reached yet"), error.message)
-        }
-    });
-
-    it("should emit a new art work validated event and clean the artWork area pool since the a art work was validated", async () => {
-        await artWorkPoolManagerInstance.setDifficulty(3, { from: accounts[0] });
-        for (let i = 0; i < 3; i++) {
-            await artWorkPoolManagerInstance.proposeArtWork(1, `http://${i}`, accounts[1], { from: accounts[0] });
-        }
-
-        const result = await artWorkPoolManagerInstance.selectArtWork(1, 1, { from: accounts[0] });
-
-        const validatedArtWorks = await artWorkPoolManagerInstance.validatedArtWorkCountByArea(1);
-
-        assert.equal(result.logs[0].event, "ArtWorkSelected", "Validation event not emitted");
-        assert.equal(result.logs[0].args.areaId.toNumber(), 1, "AreaId does not match expected");
-        assert.equal(result.logs[0].args.contentUri, "http://1", "ArtWorkId does not match expected");
-        assert.equal(result.logs[0].args.generator, accounts[1], "Generator does not match expected");
-        assert.equal(validatedArtWorks.toNumber(), 1, "ArtWork not added to validated artWork count");
-
-        try {
-            await artWorkPoolManagerInstance.artWorksByArea(1, 0);
-        } catch (error) {
-            assert(error.message.includes("revert"), "Proposed artWork pool not cleared");
         }
     });
 

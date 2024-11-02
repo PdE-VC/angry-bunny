@@ -6,12 +6,15 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IPatreonManager.sol";
 import "./interfaces/IAreaCollectionManager.sol";
 
-contract ABAC is ERC20, Ownable {
+contract ANGRY is ERC20, Ownable {
     uint256 public constant MIN_TOKENS_PER_BLOCK = 10;
     uint256 public constant MAX_SUPPLY = 21 * 10**3 * 10**6 * 10**18;
     uint256 public constant INITIAL_TOKENS_PER_BLOCK = 50 * 10**3 * 10**18;
     uint256 public constant HALVING_BLOCK_INTERVAL = 4 * 365 * 24 * 60 * 6;
     uint256 public constant INITIAL_SUPPLY = (MAX_SUPPLY * 4) / 100;
+    uint256 public constant PATREON_PERCENTAGE_REWARD = 50;
+    uint256 public constant ARTIST_PERCENTAGE_REWARD = 40;
+    uint256 public constant AREA_CREATOR_PERCENTAGE_REWARD = 5;
 
     uint256 public block_number;
     uint256 public tokensPerBlock;
@@ -27,7 +30,7 @@ contract ABAC is ERC20, Ownable {
     event Halving(uint256 newTokensPerBlock);
     event ArtWorkMinted(address artist, uint256 areaId, string imageURI, address selectedPatreon, address areaCreator);
 
-    constructor() ERC20("Angry Bunny Art Coin", "ABAC") {
+    constructor() ERC20("Angry Bunny", "ANGRY") {
         _mint(msg.sender, INITIAL_SUPPLY);
         tokensPerBlock = INITIAL_TOKENS_PER_BLOCK;
     }
@@ -67,11 +70,10 @@ contract ABAC is ERC20, Ownable {
 
         address areaCreator = areaCollectionManager.getAreaCreator(area);
 
-        // TODO: Pensar en la distribución de los tokens
-        uint256 patreonReward = tokensPerBlock / 2; // 50%
-        uint256 artistReward = (tokensPerBlock * 40) / 100; // 40%
-        uint256 areaCreatorReward = (tokensPerBlock * 5) / 100; // 5%
-        uint256 ownerReward = tokensPerBlock - (patreonReward + artistReward + areaCreatorReward); // 5% + cualquier residuo
+        uint256 patreonReward = (tokensPerBlock * PATREON_PERCENTAGE_REWARD) / 100;
+        uint256 artistReward = (tokensPerBlock * ARTIST_PERCENTAGE_REWARD) / 100;
+        uint256 areaCreatorReward = (tokensPerBlock * AREA_CREATOR_PERCENTAGE_REWARD) / 100;
+        uint256 ownerReward = tokensPerBlock - (patreonReward + artistReward + areaCreatorReward); // Owner gets the rest
 
         _mint(selectedPatreon, patreonReward);
         _mint(artist, artistReward);
