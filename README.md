@@ -87,3 +87,14 @@ This project is licensed under the MIT License - see the `LICENSE` file for deta
 ## Art Coin Diagram
 
 ![Angry Bunny Diagram](assets/diagram.png)
+
+## Amoy Test Network (mumbai) Contract Addresses
+
+Owner Address - 0xaA3d860d0390948dA38f8a3cbd3f6eF543848aC9
+
+| Contract           | Address                                | Transaction Hash                        |
+|--------------------|----------------------------------------|-----------------------------------------|
+| ANGRY    | 0x1a27b49DECe68b3E31f5C72dD59DcFEd99ea874c | 0xd293d381a55f2f62f441d512ad19ffabd0542a94a8eecc249d5f0728c6978396 |
+| PatreonManager   | 0x7182c98706b01ba52c2C2c32CcedE3239c70233c | 0xf034f2d557ec9d53f070b1ed09b5638d5af40be723603841e56bcd7ce46677fc |
+| AreaCollectionManager    | 0x0EA06d9Fd5E95cFAc6697D3dBF0Fea0AC73CC0eF | 0x2704f6b7b7b1dcb7a2c5f6cfc29c022cd5343302903ed20ce93d955569806c01 |
+| ArtWorkPoolManager    | 0xA0EE2Df96A991B345708851F7ecCCF0EA33b574c | 0xbf7cad621d4d8202c86ae5f96710f9b9d0b387c13396717579927b4b800f84bf |

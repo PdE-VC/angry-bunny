@@ -41,7 +41,7 @@ contract PatreonManager is ERC20, Ownable {
     function calculateSupply() internal view returns (uint256) {
         if (totalPeriods < maxGrowthPeriods) {
             // Exponential growth during the first 16 years
-            return initialSupply * (factor ** totalPeriods);
+            return initialSupply * (2 ** totalPeriods);
         } else {
             // After 16 years, no more new tokens are minted
             return 0;
