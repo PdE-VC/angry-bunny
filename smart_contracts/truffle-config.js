@@ -1,4 +1,6 @@
 require('dotenv').config();
+
+const Web3 = require('web3');
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 const POLYGON_RPC_URL = "https://rpc-amoy.polygon.technology/";
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
@@ -12,6 +14,8 @@ module.exports = {
       host: "127.0.0.1",     // Localhost (default: none)
       port: 8545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
+      gas: 8000000,
+      gasPrice: 20000000000,
     },
     // Configuración para la testnet de Polygon (Amoy Testnet)
     mumbai: {
@@ -20,7 +24,8 @@ module.exports = {
       confirmations: 2,      // Número de confirmaciones para esperar después de enviar una transacción
       timeoutBlocks: 200,    // Número de bloques antes de que se agote el tiempo de espera de la transacción
       skipDryRun: true,      // Omitir la ejecución en seco antes de las migraciones
-      gasPrice: 25000000000, // Gas Price para las transaccionesC
+      gas: 3000000,
+      gasPrice: 60000000000, // 20 Gwei
     },
   },
 

@@ -3,8 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interfaces/IPatreonManager.sol";
-import "./interfaces/IAreaCollectionManager.sol";
+import "./interfaces/IFragmentCollectionManager.sol";
 
 contract ANGRY is ERC20, Ownable {
     uint256 public constant MIN_TOKENS_PER_BLOCK = 10;
@@ -12,41 +11,31 @@ contract ANGRY is ERC20, Ownable {
     uint256 public constant INITIAL_TOKENS_PER_BLOCK = 50 * 10**3 * 10**18;
     uint256 public constant HALVING_BLOCK_INTERVAL = 4 * 365 * 24 * 60 * 6;
     uint256 public constant INITIAL_SUPPLY = (MAX_SUPPLY * 4) / 100;
-    uint256 public constant PATREON_PERCENTAGE_REWARD = 50;
     uint256 public constant ARTIST_PERCENTAGE_REWARD = 40;
-    uint256 public constant AREA_CREATOR_PERCENTAGE_REWARD = 5;
+    uint256 public constant FRAGMENT_CREATOR_PERCENTAGE_REWARD = 5;
 
     uint256 public block_number;
     uint256 public tokensPerBlock;
 
-    bool public areaCollectionManagerAlreadySet = false;
-    bool public patreonManagerAddressAlreadySet = false;
+    bool public fragmentCollectionManagerAlreadySet = false;
 
-    IAreaCollectionManager public areaCollectionManager;
-    IPatreonManager public patreonManager;
+    IFragmentCollectionManager public fragmentCollectionManager;
 
     address public artWorkPoolAddress;
 
     event Halving(uint256 newTokensPerBlock);
-    event ArtWorkMinted(address artist, uint256 areaId, string imageURI, address selectedPatreon, address areaCreator);
+    event ArtWorkMinted(address artist, uint256 fragmentId, string imageURI);
 
     constructor() ERC20("Angry Bunny", "ANGRY") {
         _mint(msg.sender, INITIAL_SUPPLY);
         tokensPerBlock = INITIAL_TOKENS_PER_BLOCK;
     }
 
-    function setPatreonManagerAddress(address _patreonManagerAddress) external onlyOwner {
-        require(!patreonManagerAddressAlreadySet, "Address already set");
-        require(_patreonManagerAddress != address(0), "Invalid address");
-        patreonManager = IPatreonManager(_patreonManagerAddress);
-        patreonManagerAddressAlreadySet = true;
-    }
-
-    function setAreaCollectionManagerAddress(address areaCollectionManagerAddress) external onlyOwner {
-        require(!areaCollectionManagerAlreadySet, "Address already set");
-        require(areaCollectionManagerAddress != address(0), "Invalid address");
-        areaCollectionManager = IAreaCollectionManager(areaCollectionManagerAddress);
-        areaCollectionManagerAlreadySet = true;
+    function setFragmentCollectionManagerAddress(address fragmentCollectionManagerAddress) external onlyOwner {
+        require(!fragmentCollectionManagerAlreadySet, "Address already set");
+        require(fragmentCollectionManagerAddress != address(0), "Invalid address");
+        fragmentCollectionManager = IFragmentCollectionManager(fragmentCollectionManagerAddress);
+        fragmentCollectionManagerAlreadySet = true;
     }
 
     function setArtWorkPoolAddress(address _artWorkPoolAddress) external onlyOwner {
@@ -61,28 +50,18 @@ contract ANGRY is ERC20, Ownable {
         _;
     }
 
-    function mintTokenAndArtWork(uint256 area, address artist, string memory contentUri) external onlyArtWorkPool {
+    function mint(address to, uint256 amount) external onlyArtWorkPool {
         require(totalSupply() + tokensPerBlock <= MAX_SUPPLY, "Max supply reached");
+        _mint(to, amount);
+    }
 
+    function mintArtWork(uint256 fragment, address artist, string memory contentUri) external onlyArtWorkPool {
+        block_number = block_number + 1;
         _applyHalving();
 
-        address selectedPatreon = patreonManager.selectRandomHolder();
+        fragmentCollectionManager.mintArtWork(fragment, contentUri);
 
-        address areaCreator = areaCollectionManager.getAreaCreator(area);
-
-        uint256 patreonReward = (tokensPerBlock * PATREON_PERCENTAGE_REWARD) / 100;
-        uint256 artistReward = (tokensPerBlock * ARTIST_PERCENTAGE_REWARD) / 100;
-        uint256 areaCreatorReward = (tokensPerBlock * AREA_CREATOR_PERCENTAGE_REWARD) / 100;
-        uint256 ownerReward = tokensPerBlock - (patreonReward + artistReward + areaCreatorReward); // Owner gets the rest
-
-        _mint(selectedPatreon, patreonReward);
-        _mint(artist, artistReward);
-        _mint(areaCreator, areaCreatorReward);
-        _mint(owner(), ownerReward);
-
-        areaCollectionManager.mintArtWork(area, contentUri);
-
-        emit ArtWorkMinted(artist, area, contentUri, selectedPatreon, areaCreator);
+        emit ArtWorkMinted(artist, fragment, contentUri);
     }
 
     function _applyHalving() internal {
@@ -98,8 +77,6 @@ contract ANGRY is ERC20, Ownable {
             }
 
             emit Halving(tokensPerBlock);
-
-            patreonManager.mintNewSupply();
         }
     }
 }

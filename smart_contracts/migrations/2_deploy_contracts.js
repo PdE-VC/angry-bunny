@@ -1,8 +1,7 @@
 const ANGRY = artifacts.require("ANGRY");
-const PatreonManager = artifacts.require("PatreonManager");
-const AreaCollectionManager = artifacts.require("AreaCollectionManager");
+const FragmentCollectionManager = artifacts.require("FragmentCollectionManager");
 const ArtWorkPoolManager = artifacts.require("ArtWorkPoolManager");
-const AreaCollection = artifacts.require("AreaCollection");
+const FragmentCollection = artifacts.require("FragmentCollection");
 const env = process.env.NODE_ENV || "test";
 
 module.exports = async function (deployer) {
@@ -10,28 +9,21 @@ module.exports = async function (deployer) {
   await deployer.deploy(ANGRY);
   const angryInstance = await ANGRY.deployed();
   
-  // Deploy PatreonManager contract
-  await deployer.deploy(PatreonManager, "Patreon Manager NTFS", "PM", angryInstance.address);
-  const patreonManagerInstance = await PatreonManager.deployed();
-  
-  // Deploy AreaCollectionManager contract with ANGRY address
-  await deployer.deploy(AreaCollectionManager, angryInstance.address);
-  const areaCollectionManagerInstance = await AreaCollectionManager.deployed();
+  // Deploy FragmentCollectionManager contract with ANGRY address
+  await deployer.deploy(FragmentCollectionManager, angryInstance.address);
+  const fragmentCollectionManagerInstance = await FragmentCollectionManager.deployed();
   
   // Deploy ArtWorkPoolManager contract with ANGRY address
-  await deployer.deploy(ArtWorkPoolManager, angryInstance.address, areaCollectionManagerInstance.address);
+  await deployer.deploy(ArtWorkPoolManager, angryInstance.address, fragmentCollectionManagerInstance.address);
   
-  // Set AreaCollectionManager contract address in ANGRY contract
-  await angryInstance.setAreaCollectionManagerAddress(AreaCollectionManager.address);
-
-  // Set PatreonManager contract address in ANGRY contract
-  await angryInstance.setPatreonManagerAddress(PatreonManager.address);
+  // Set FragmentCollectionManager contract address in ANGRY contract
+  await angryInstance.setFragmentCollectionManagerAddress(FragmentCollectionManager.address);
 
   // Set ArtWorkPoolManager contract address in ANGRY contract
   await angryInstance.setArtWorkPoolAddress(ArtWorkPoolManager.address);
 
   // ONLY FOR TESTING
   // if (env === "test") {
-  //   await deployer.deploy(AreaCollection, "Area Collection NTFS", "SC", 1, 20, "http://...", areaCollectionManagerInstance.address);
+  await deployer.deploy(FragmentCollection, "Fragment Collection NTFS", "SC", 1, 20, "http://...", fragmentCollectionManagerInstance.address);
   // }
 };
